@@ -1,0 +1,32 @@
+version: "2"
+
+services:
+  proxy:
+    image: envoyproxy/envoy:v1.27-latest
+    command:
+      - "/usr/local/bin/envoy"
+      - -c
+      - /etc/envoy/envoy.yaml
+      - --log-level warn
+      - --component-log-level http:info,misc:error
+    ports:
+      - "8001:8001"
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - ./certs:/etc/certs
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+  sse-backend-non-tls:
+    build:
+      context: ./backend/
+    ports:
+      - "18080:8080"
+  sse-backend-with-tls:
+    build:
+      context: ./backend-with-tls/
+    ports:
+      - "18081:8081"
+    volumes:
+      - ./certs:/etc/certs
+  helloworld-service:
+    image: kicbase/echo-server:1.0
